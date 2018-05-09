@@ -9,28 +9,28 @@ namespace Math
     class alignas(16) Matrix
     {
     public:
-        // Column major entries.
+        // Row major entries: m[row][column].
         float m[4][4];
 
         Matrix() = default;
         Matrix(const Matrix&) = default;
         Matrix& operator=(const Matrix&);
 
-        static Matrix MakeIdentity();
-        static Matrix MakeTransposed(const Matrix& m);
-        static Matrix MakeInverted(const Matrix& m);
+        static Matrix Zero();
+        static Matrix Identity();
+        static Matrix Transpose(const Matrix& m);
+        static Matrix Inverse(const Matrix& m);
 
-        //static Matrix MakeRotationX(const float rad);
-        //static Matrix MakeRotationY(const float rad);
-        //static Matrix MakeRotationZ(const float rad);
-        //static Matrix MakeScale(const float scaleX, const float scaleY, const float scaleZ);
-        //static Matrix MakeTranslation(const float x, const float y, const float z);
+        //static Matrix RotationX(const float rad);
+        //static Matrix RotationY(const float rad);
+        //static Matrix RotationZ(const float rad);
+        //static Matrix Scale(const float scaleX, const float scaleY, const float scaleZ);
+        //static Matrix Translation(const float x, const float y, const float z);
 
-        void Identity();
-        void Zero();
         void Transpose();
         bool Invert();
 
+        // Determinant.
         float Determinant() const;
 
         // Equality.

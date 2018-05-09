@@ -1,14 +1,48 @@
 #pragma once
 
-//#define COMPILE_MATH_MATRIX_DIRECTX_MATH
+#define COMPILE_MATH_MATRIX_DIRECTX_MATH
 
 #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
 #include "Libs\DirectXMath\Inc\DirectXMath.h"
+
+inline DirectX::XMMATRIX LoadXmMatrix(const Math::Matrix& m)
+{
+    return DirectX::XMLoadFloat4x4A(reinterpret_cast<const DirectX::XMFLOAT4X4A*>(&m));
+}
+
+inline void StoreXmMatrix(const DirectX::XMMATRIX& m, Math::Matrix& o)
+{
+    DirectX::XMStoreFloat4x4A(reinterpret_cast<DirectX::XMFLOAT4X4A*>(&o), m);
+}
+
+inline Math::Matrix CreateMatrix(const DirectX::XMMATRIX& m)
+{
+    Math::Matrix result;
+    DirectX::XMStoreFloat4x4A(reinterpret_cast<DirectX::XMFLOAT4X4A*>(&result), m);
+    return result;
+}
+
+inline DirectX::XMVECTOR LoadXmVector(const Math::Vector& v)
+{
+    return DirectX::XMLoadFloat4A(reinterpret_cast<const DirectX::XMFLOAT4A*>(&v));
+}
+
+inline Math::Vector CreateVector(const DirectX::XMVECTOR& v)
+{
+    Math::Vector result;
+    DirectX::XMStoreFloat4A(reinterpret_cast<DirectX::XMFLOAT4A*>(&result), v);
+    return result;
+}
+
 #endif
 
 inline float MatrixDeterminant(const Math::Matrix& m)
 {
 #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
+
+    const DirectX::XMMATRIX xm = LoadXmMatrix(m);
+    const DirectX::XMVECTOR xv = DirectX::XMMatrixDeterminant(xm);
+    return DirectX::XMVectorGetX(xv);
 
 #else
 
@@ -49,6 +83,10 @@ inline void MatrixTranspose(Math::Matrix& m)
 {
 #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
 
+    DirectX::XMMATRIX xm = LoadXmMatrix(m);
+    xm = DirectX::XMMatrixTranspose(xm);
+    StoreXmMatrix(xm, m);
+
 #else
 
     std::swap(m.m[1][0], m.m[0][1]);
@@ -65,6 +103,10 @@ inline void MatrixTranspose(const Math::Matrix& m, Math::Matrix& o)
 {
 #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
 
+    DirectX::XMMATRIX xm = LoadXmMatrix(m);
+    xm = DirectX::XMMatrixTranspose(xm);
+    StoreXmMatrix(xm, o);
+
 #else
 
     o.m[0][0] = m.m[0][0]; o.m[0][1] = m.m[1][0]; o.m[0][2] = m.m[2][0]; o.m[0][3] = m.m[3][0];
@@ -79,13 +121,13 @@ inline bool MatrixInvert(const Math::Matrix& m, Math::Matrix& o)
 {
 #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
 
-    DirectX::XMMATRIX xm = DirectX::XMLoadFloat4x4A(reinterpret_cast<const DirectX::XMFLOAT4X4A*>(&m));
+    DirectX::XMMATRIX xm = LoadXmMatrix(m);
     xm = DirectX::XMMatrixInverse(nullptr, xm);
     if (DirectX::XMMatrixIsNaN(xm))
     {
         return false;
     }
-    DirectX::XMStoreFloat4x4A(reinterpret_cast<DirectX::XMFLOAT4X4A*>(&o), xm);
+    StoreXmMatrix(xm, o);
     return true;
 
 #else
@@ -162,12 +204,8 @@ inline Math::Matrix MatrixMultiply(const Math::Matrix& l, const Math::Matrix& r)
 {
 #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
 
-    Math::Matrix result;
-    const DirectX::XMMATRIX xm1 = DirectX::XMLoadFloat4x4A(reinterpret_cast<const DirectX::XMFLOAT4X4A*>(&l));
-    const DirectX::XMMATRIX xm2 = DirectX::XMLoadFloat4x4A(reinterpret_cast<const DirectX::XMFLOAT4X4A*>(&r));
-    const DirectX::XMMATRIX xm3 = DirectX::XMMatrixMultiply(xm1, xm2);
-    DirectX::XMStoreFloat4x4A(reinterpret_cast<DirectX::XMFLOAT4X4A*>(&result), xm3);
-    return result;
+    const DirectX::XMMATRIX xm = DirectX::XMMatrixMultiply(LoadXmMatrix(l), LoadXmMatrix(r));
+    return CreateMatrix(xm);
 
 #else
 
@@ -194,13 +232,11 @@ inline Math::Vector MatrixMultiply(const Math::Matrix& m, const Math::Vector& v)
 {
 #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
 
-    DirectX::XMMATRIX xm = DirectX::XMLoadFloat4x4A(reinterpret_cast<const DirectX::XMFLOAT4X4A*>(&m));
+    DirectX::XMMATRIX xm = LoadXmMatrix(m);
     xm = DirectX::XMMatrixTranspose(xm);
-    DirectX::XMVECTOR xv1 = DirectX::XMLoadFloat4A(reinterpret_cast<const DirectX::XMFLOAT4A*>(&v));
+    DirectX::XMVECTOR xv1 = LoadXmVector(v);
     DirectX::XMVECTOR xv2 = DirectX::XMVector4Transform(xv1, xm);
-    Math::Vector result;
-    DirectX::XMStoreFloat4A(reinterpret_cast<DirectX::XMFLOAT4A*>(&result), xv2);
-    return result;
+    return CreateVector(xv2);
 
 #else
 
@@ -218,12 +254,10 @@ inline Math::Vector MatrixMultiply(const Math::Vector& v, const Math::Matrix& m)
 {
 #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
 
-    DirectX::XMMATRIX xm = DirectX::XMLoadFloat4x4A(reinterpret_cast<const DirectX::XMFLOAT4X4A*>(&m));
-    DirectX::XMVECTOR xv1 = DirectX::XMLoadFloat4A(reinterpret_cast<const DirectX::XMFLOAT4A*>(&v));
+    DirectX::XMMATRIX xm = LoadXmMatrix(m);
+    DirectX::XMVECTOR xv1 = LoadXmVector(v);
     DirectX::XMVECTOR xv2 = DirectX::XMVector4Transform(xv1, xm);
-    Math::Vector result;
-    DirectX::XMStoreFloat4A(reinterpret_cast<DirectX::XMFLOAT4A*>(&result), xv2);
-    return result;
+    return CreateVector(xv2);
 
 #else
 
@@ -376,7 +410,7 @@ namespace Math
         return MatrixMultiply(v, m);
     }
 
-    inline Matrix Matrix::MakeIdentity()
+    inline Matrix Matrix::Identity()
     {
         Matrix m;
         m.m[0][0] = 1.0f; m.m[0][1] = 0.0f; m.m[0][2] = 0.0f; m.m[0][3] = 0.0f;
@@ -386,14 +420,14 @@ namespace Math
         return m;
     }
 
-    inline Matrix Matrix::MakeTransposed(const Matrix& m)
+    inline Matrix Matrix::Transpose(const Matrix& m)
     {
         Matrix n;
         MatrixTranspose(m, n);
         return n;
     }
 
-    inline Matrix Matrix::MakeInverted(const Matrix& m)
+    inline Matrix Matrix::Inverse(const Matrix& m)
     {
         Matrix n;
         MatrixInvert(m, n);
@@ -406,17 +440,11 @@ namespace Math
         return *this;
     }
 
-    inline void Matrix::Zero()
+    inline Matrix Matrix::Zero()
     {
-        memset(m, 0, sizeof(m));
-    }
-
-    inline void Matrix::Identity()
-    {
-        m[0][0] = 1; m[0][1] = 0; m[0][2] = 0; m[0][3] = 0;
-        m[1][0] = 0; m[1][1] = 1; m[1][2] = 0; m[1][3] = 0;
-        m[2][0] = 0; m[2][1] = 0; m[2][2] = 1; m[2][3] = 0;
-        m[3][0] = 0; m[3][1] = 0; m[3][2] = 0; m[3][3] = 1;
+        Matrix m;
+        memset(&m, 0, sizeof(m));
+        return m;
     }
 
     inline void Matrix::Transpose()
