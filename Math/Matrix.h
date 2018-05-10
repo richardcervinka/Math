@@ -12,7 +12,6 @@ namespace Math
         // Row major entries: m[row][column].
         float m[4][4];
 
-        Matrix() = default;
         Matrix(const Matrix&) = default;
         Matrix& operator=(const Matrix&);
 
@@ -21,11 +20,19 @@ namespace Math
         static Matrix Transpose(const Matrix& m);
         static Matrix Inverse(const Matrix& m);
 
-        //static Matrix RotationX(const float rad);
-        //static Matrix RotationY(const float rad);
-        //static Matrix RotationZ(const float rad);
-        //static Matrix Scale(const float scaleX, const float scaleY, const float scaleZ);
-        //static Matrix Translation(const float x, const float y, const float z);
+        // Create rotation matrices for column-major vector.
+        static Matrix RotationX(const float rad);
+        static Matrix RotationY(const float rad);
+        static Matrix RotationZ(const float rad);
+
+        // Z * X * Y
+        static Matrix Rotation(const float x, const float y, const float z);
+
+        // Rotation around axis defined as unit vector.
+        //static Matrix RotationAxes(const Vector& v);
+
+        static Matrix Scale(const float x, const float y, const float z);
+        static Matrix Translation(const float x, const float y, const float z);
 
         void Transpose();
         bool Invert();
@@ -53,7 +60,7 @@ namespace Math
         // Multiply all entries of a row.
         void MulRow(const int row, const float value);
 
-        // Apply transformations to column-major vector.
+        // Apply transformations to column vector.
         Vector Transform(const Vector& v) const;
 
         void AppendTransformations(const Matrix&);
@@ -64,8 +71,26 @@ namespace Math
 
         void AppendScaling(const float x, const float y, const float z);
         void PrependScaling(const float x, const float y, const float z);
+
+    private:
+        // Create uninitialized matrix. Only internal use.
+        Matrix() = default;
+
+        // Implementation.
+        static float Determinant(const Matrix& m);
+        static void MatrixTranspose(Matrix& m);
+        static void Transpose(const Matrix& m, Matrix& o);
+        static bool Invert(const Matrix& m, Matrix& o);
+        static Matrix Multiply(const Matrix& l, const Matrix& r);
+        static Vector Multiply(const Matrix& m, const Vector& v);
+        static Vector Multiply(const Vector& v, const Matrix& m);
+        static void Add(const Matrix& l, const Matrix& r, Matrix& result);
+
+        // Friends that needs access to the Multiply function.
+        friend Vector operator*(const Matrix& m, const Vector& v);
+        friend Vector operator*(const Vector& v, const Matrix& m);
     };
 }
 
-// Include implementation file.
+// Implementation file.
 #include "Matrix.inl"
