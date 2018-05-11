@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 namespace Math
 {
     inline void Vector::Set(const float x_, const float y_, const float z_, const float w_) noexcept

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cmath>
-
 namespace Math
 {
     class alignas(16) Vector

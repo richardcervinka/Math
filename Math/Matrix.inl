@@ -1,5 +1,8 @@
 #pragma once
 
+#include <algorithm>
+#include <cmath>
+
 // Implementation switch.
 //#define COMPILE_MATH_MATRIX_DIRECTX_MATH
 
