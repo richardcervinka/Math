@@ -1,7 +1,7 @@
 #pragma once
 
 // Implementation switch.
-#define COMPILE_MATH_MATRIX_DIRECTX_MATH
+//#define COMPILE_MATH_MATRIX_DIRECTX_MATH
 
 // DirectX Math implementation helpers.
 #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH

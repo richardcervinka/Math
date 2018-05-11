@@ -15,23 +15,33 @@ namespace Math
         Matrix(const Matrix&) = default;
         Matrix& operator=(const Matrix&);
 
+        // Create a zero matrix.
         static Matrix Zero();
+
+        // Create an identity matrix.
         static Matrix Identity();
+
+        // Create transpose matrix.
         static Matrix Transpose(const Matrix& m);
+
+        // Create inverse matrix.
         static Matrix Inverse(const Matrix& m);
 
-        // Create rotation matrices for column-major vector.
+        // Create rotation matrices around the world axes.
         static Matrix RotationX(const float rad);
         static Matrix RotationY(const float rad);
         static Matrix RotationZ(const float rad);
 
-        // Z * X * Y
+        // Create a rotation matrix around all worl axes in order Z, X, Y.
         static Matrix Rotation(const float x, const float y, const float z);
 
-        // Rotation around axis defined as unit vector.
+        // Create a rotation matrix around the axis defined as unit vector.
         //static Matrix RotationAxes(const Vector& v);
 
+        // Create a scale matrix.
         static Matrix Scale(const float x, const float y, const float z);
+
+        // Create a translation matrix.
         static Matrix Translation(const float x, const float y, const float z);
 
         void Transpose();
@@ -60,7 +70,7 @@ namespace Math
         // Multiply all entries of a row.
         void MulRow(const int row, const float value);
 
-        // Apply transformations to column vector.
+        // Apply transformations (this * v).
         Vector Transform(const Vector& v) const;
 
         void AppendTransformations(const Matrix&);
@@ -73,7 +83,7 @@ namespace Math
         void PrependScaling(const float x, const float y, const float z);
 
     private:
-        // Create uninitialized matrix. Only internal use.
+        // Create a uninitialized matrix. Only internal use.
         Matrix() = default;
 
         // Implementation.
