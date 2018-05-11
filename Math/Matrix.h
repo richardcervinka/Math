@@ -15,6 +15,12 @@ namespace Math
         Matrix(const Matrix&) = default;
         Matrix& operator=(const Matrix&);
 
+        // Copy the column-major entries into the raw memory.
+        void StoreColumnMajor(void* const raw);
+
+        // Copy the row-major entries into the raw memory.
+        void StoreRowMajor(void* const raw);
+
         // Create a zero matrix.
         static Matrix Zero();
 
@@ -34,15 +40,18 @@ namespace Math
 
         // Create a rotation matrix around all worl axes in order Z, X, Y.
         static Matrix Rotation(const float x, const float y, const float z);
+        static Matrix Rotation(const Vector&);
 
         // Create a rotation matrix around the axis defined as unit vector.
         //static Matrix RotationAxes(const Vector& v);
 
         // Create a scale matrix.
         static Matrix Scale(const float x, const float y, const float z);
+        static Matrix Scale(const Vector&);
 
         // Create a translation matrix.
         static Matrix Translation(const float x, const float y, const float z);
+        static Matrix Translation(const Vector&);
 
         void Transpose();
         bool Invert();
@@ -89,16 +98,16 @@ namespace Math
         // Implementation.
         static float Determinant(const Matrix& m);
         static void MatrixTranspose(Matrix& m);
-        static void Transpose(const Matrix& m, Matrix& o);
+        static void Transpose(const Matrix& m, Matrix* const o);
         static bool Invert(const Matrix& m, Matrix& o);
         static Matrix Multiply(const Matrix& l, const Matrix& r);
-        static Vector Multiply(const Matrix& m, const Vector& v);
-        static Vector Multiply(const Vector& v, const Matrix& m);
+        static Vector Multiply(const Matrix& l, const Vector& r);
+        static Vector Multiply(const Vector& l, const Matrix& r);
         static void Add(const Matrix& l, const Matrix& r, Matrix& result);
 
         // Friends that needs access to the Multiply function.
-        friend Vector operator*(const Matrix& m, const Vector& v);
-        friend Vector operator*(const Vector& v, const Matrix& m);
+        friend Vector operator*(const Matrix&, const Vector&);
+        friend Vector operator*(const Vector&, const Matrix&);
     };
 }
 

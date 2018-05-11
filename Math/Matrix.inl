@@ -13,9 +13,9 @@ inline DirectX::XMMATRIX LoadXmMatrix(const Math::Matrix& m)
     return DirectX::XMLoadFloat4x4A(reinterpret_cast<const DirectX::XMFLOAT4X4A*>(&m));
 }
 
-inline void StoreXmMatrix(const DirectX::XMMATRIX& m, Math::Matrix& o)
+inline void StoreXmMatrix(const DirectX::XMMATRIX& m, Math::Matrix* const o)
 {
-    DirectX::XMStoreFloat4x4A(reinterpret_cast<DirectX::XMFLOAT4X4A*>(&o), m);
+    DirectX::XMStoreFloat4x4A(reinterpret_cast<DirectX::XMFLOAT4X4A*>(o), m);
 }
 
 inline DirectX::XMVECTOR LoadXmVector(const Math::Vector& v)
@@ -84,7 +84,7 @@ namespace Math
 
         DirectX::XMMATRIX xm = LoadXmMatrix(m);
         xm = DirectX::XMMatrixTranspose(xm);
-        StoreXmMatrix(xm, m);
+        StoreXmMatrix(xm, &m);
 
         #else
 
@@ -98,7 +98,7 @@ namespace Math
         #endif
     }
 
-    inline void Matrix::Transpose(const Matrix& m, Matrix& o)
+    inline void Matrix::Transpose(const Matrix& m, Matrix* const o)
     {
         #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
 
@@ -108,10 +108,10 @@ namespace Math
 
         #else
 
-        o.m[0][0] = m.m[0][0]; o.m[0][1] = m.m[1][0]; o.m[0][2] = m.m[2][0]; o.m[0][3] = m.m[3][0];
-        o.m[1][0] = m.m[0][1]; o.m[1][1] = m.m[1][1]; o.m[1][2] = m.m[2][1]; o.m[1][3] = m.m[3][1];
-        o.m[2][0] = m.m[0][2]; o.m[2][1] = m.m[1][2]; o.m[2][2] = m.m[2][2]; o.m[2][3] = m.m[3][2];
-        o.m[3][0] = m.m[0][3]; o.m[3][1] = m.m[1][3]; o.m[3][2] = m.m[2][3]; o.m[3][3] = m.m[3][3];
+        o->m[0][0] = m.m[0][0]; o->m[0][1] = m.m[1][0]; o->m[0][2] = m.m[2][0]; o->m[0][3] = m.m[3][0];
+        o->m[1][0] = m.m[0][1]; o->m[1][1] = m.m[1][1]; o->m[1][2] = m.m[2][1]; o->m[1][3] = m.m[3][1];
+        o->m[2][0] = m.m[0][2]; o->m[2][1] = m.m[1][2]; o->m[2][2] = m.m[2][2]; o->m[2][3] = m.m[3][2];
+        o->m[3][0] = m.m[0][3]; o->m[3][1] = m.m[1][3]; o->m[3][2] = m.m[2][3]; o->m[3][3] = m.m[3][3];
 
         #endif
     }
@@ -126,7 +126,7 @@ namespace Math
         {
             return false;
         }
-        StoreXmMatrix(xm, o);
+        StoreXmMatrix(xm, &o);
         return true;
 
         #else
@@ -205,7 +205,7 @@ namespace Math
 
         const DirectX::XMMATRIX xm = DirectX::XMMatrixMultiply(LoadXmMatrix(l), LoadXmMatrix(r));
         Matrix m;
-        StoreXmMatrix(xm, m);
+        StoreXmMatrix(xm, &m);
         return m;
 
         #else
@@ -229,7 +229,7 @@ namespace Math
         #endif
     }
 
-    inline Vector Matrix::Multiply(const Matrix& m, const Vector& v)
+    inline Vector Matrix::Multiply(const Matrix& l, const Vector& r)
     {
         #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
 
@@ -242,16 +242,16 @@ namespace Math
         #else
 
         return Vector(
-            m.m[0][0] * v.x + m.m[0][1] * v.y + m.m[0][2] * v.z + m.m[0][3] * v.w,
-            m.m[1][0] * v.x + m.m[1][1] * v.y + m.m[1][2] * v.z + m.m[1][3] * v.w,
-            m.m[2][0] * v.x + m.m[2][1] * v.y + m.m[2][2] * v.z + m.m[2][3] * v.w,
-            m.m[3][0] * v.x + m.m[3][1] * v.y + m.m[3][2] * v.z + m.m[3][3] * v.w
+            l.m[0][0] * r.x + l.m[0][1] * r.y + l.m[0][2] * r.z + l.m[0][3] * r.w,
+            l.m[1][0] * r.x + l.m[1][1] * r.y + l.m[1][2] * r.z + l.m[1][3] * r.w,
+            l.m[2][0] * r.x + l.m[2][1] * r.y + l.m[2][2] * r.z + l.m[2][3] * r.w,
+            l.m[3][0] * r.x + l.m[3][1] * r.y + l.m[3][2] * r.z + l.m[3][3] * r.w
         );
 
         #endif
     }
 
-    inline Vector Matrix::Multiply(const Vector& v, const Matrix& m)
+    inline Vector Matrix::Multiply(const Vector& l, const Matrix& r)
     {
         #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
 
@@ -263,10 +263,10 @@ namespace Math
         #else
 
         return Vector(
-            v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0] + v.w * m.m[3][0],
-            v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1] + v.w * m.m[3][1],
-            v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2] + v.w * m.m[3][2],
-            v.x * m.m[0][3] + v.y * m.m[1][3] + v.z * m.m[2][3] + v.w * m.m[3][3]
+            l.x * r.m[0][0] + l.y * r.m[1][0] + l.z * r.m[2][0] + l.w * r.m[3][0],
+            l.x * r.m[0][1] + l.y * r.m[1][1] + l.z * r.m[2][1] + l.w * r.m[3][1],
+            l.x * r.m[0][2] + l.y * r.m[1][2] + l.z * r.m[2][2] + l.w * r.m[3][2],
+            l.x * r.m[0][3] + l.y * r.m[1][3] + l.z * r.m[2][3] + l.w * r.m[3][3]
         );
 
         #endif
@@ -308,7 +308,7 @@ namespace Math
     inline Matrix Matrix::Transpose(const Matrix& m)
     {
         Matrix n;
-        Transpose(m, n);
+        Transpose(m, &n);
         return n;
     }
 
@@ -323,6 +323,16 @@ namespace Math
     {
         memcpy(m, matrix.m, sizeof(m));
         return *this;
+    }
+
+    inline void Matrix::StoreColumnMajor(void* const raw)
+    {
+        Transpose(*this, reinterpret_cast<Matrix* const>(raw));
+    }
+
+    inline void Matrix::StoreRowMajor(void* const raw)
+    {
+        std::memcpy(raw, m, sizeof(m));
     }
 
     inline Matrix Matrix::Zero()
@@ -535,9 +545,10 @@ namespace Math
         return m;
     }
 
-    // Rotation decomposition
-    // float rz = std::atan2f(rotations.m[1][0], rotations.m[1][1]);
-    // float ry = std::atan2f(rotations.m[0][2], rotations.m[2][2]);
+    inline Matrix Matrix::Rotation(const Vector& v)
+    {
+        return Rotation(v.x, v.y, v.z);
+    }
 
     inline Matrix Matrix::Scale(const float x, const float y, const float z)
     {
@@ -547,6 +558,11 @@ namespace Math
         m.m[2][0] = 0.0f; m.m[2][1] = 0.0f; m.m[2][2] = z;    m.m[2][3] = 0.0f;
         m.m[3][0] = 0.0f; m.m[3][1] = 0.0f; m.m[3][2] = 0.0f; m.m[3][3] = 1.0f;
         return m;
+    }
+
+    inline Matrix Matrix::Scale(const Vector& v)
+    {
+        return Scale(v.x, v.y, v.z);
     }
 
     inline Matrix Matrix::Translation(const float x, const float y, const float z)
@@ -559,4 +575,14 @@ namespace Math
         return m;
     }
 
+    inline Matrix Matrix::Translation(const Vector& v)
+    {
+        return Translation(v.x, v.y, v.z);
+    }
+
 } // namespace Math
+
+// To do...
+// Rotation decomposition
+// float rz = std::atan2f(rotations.m[1][0], rotations.m[1][1]);
+// float ry = std::atan2f(rotations.m[0][2], rotations.m[2][2]);
