@@ -213,8 +213,7 @@ namespace Math
 
         #else
 
-        Matrix result;
-        result.Zero();
+        Matrix result = Matrix::Zero();
 
         for (int row = 0; row < 4; ++row)
         {
@@ -236,9 +235,9 @@ namespace Math
     {
         #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
 
-        DirectX::XMMATRIX xm = LoadXmMatrix(m);
+        DirectX::XMMATRIX xm = LoadXmMatrix(l);
         xm = DirectX::XMMatrixTranspose(xm);
-        DirectX::XMVECTOR xv1 = LoadXmVector(v);
+        DirectX::XMVECTOR xv1 = LoadXmVector(r);
         DirectX::XMVECTOR xv2 = DirectX::XMVector4Transform(xv1, xm);
         return CreateVector(xv2);
 
@@ -258,8 +257,8 @@ namespace Math
     {
         #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
 
-        DirectX::XMMATRIX xm = LoadXmMatrix(m);
-        DirectX::XMVECTOR xv1 = LoadXmVector(v);
+        DirectX::XMMATRIX xm = LoadXmMatrix(r);
+        DirectX::XMVECTOR xv1 = LoadXmVector(l);
         DirectX::XMVECTOR xv2 = DirectX::XMVector4Transform(xv1, xm);
         return CreateVector(xv2);
 
@@ -581,6 +580,24 @@ namespace Math
     inline Matrix Matrix::Translation(const Vector& v)
     {
         return Translation(v.x, v.y, v.z);
+    }
+
+    inline Matrix Matrix::Transformations(const Vector& translations, const Vector& scales, const Vector& rotations)
+    {
+        Matrix m = Matrix::Rotation(rotations);
+        m.m[0][0] *= scales.x;
+        m.m[1][0] *= scales.x;
+        m.m[2][0] *= scales.x;
+        m.m[0][1] *= scales.y;
+        m.m[1][1] *= scales.y;
+        m.m[2][1] *= scales.y;
+        m.m[0][2] *= scales.z;
+        m.m[1][2] *= scales.z;
+        m.m[2][2] *= scales.z;
+        m.m[0][3] = translations.x;
+        m.m[1][3] = translations.y;
+        m.m[2][3] = translations.z;
+        return m;
     }
 
 } // namespace Math

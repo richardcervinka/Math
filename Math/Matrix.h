@@ -41,7 +41,7 @@ namespace Math
         static Matrix Rotation(const float x, const float y, const float z);
         static Matrix Rotation(const Vector&);
 
-        // Create a rotation matrix around the axis defined as unit vector.
+        // Create a rotation matrix around the axis defined as an unit vector.
         //static Matrix RotationAxes(const Vector& v);
 
         // Create a scale matrix.
@@ -51,6 +51,9 @@ namespace Math
         // Create a translation matrix.
         static Matrix Translation(const float x, const float y, const float z);
         static Matrix Translation(const Vector&);
+
+        // Create a matrix for a local object transformations.
+        static Matrix Transformations(const Vector& translations, const Vector& scales, const Vector& rotations);
 
         void Transpose();
         bool Invert();
@@ -78,8 +81,8 @@ namespace Math
         // Multiply all entries of a row.
         void MulRow(const int row, const float value);
 
-        // Apply transformations (this * v).
-        Vector Transform(const Vector& v) const;
+        // Apply transformations (this * arg).
+        Vector Transform(const Vector&) const;
 
         void AppendTransformations(const Matrix&);
         void PrependTransformations(const Matrix&);
@@ -95,8 +98,8 @@ namespace Math
         Matrix() = default;
 
         // Implementation.
-        static float Determinant(const Matrix& m);
-        static void MatrixTranspose(Matrix& m);
+        static float Determinant(const Matrix&);
+        static void MatrixTranspose(Matrix&);
         static void Transpose(const Matrix& m, Matrix* const o);
         static bool Invert(const Matrix& m, Matrix& o);
         static Matrix Multiply(const Matrix& l, const Matrix& r);
