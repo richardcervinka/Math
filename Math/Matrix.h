@@ -93,6 +93,9 @@ namespace Math
         void AppendScaling(const float x, const float y, const float z);
         void PrependScaling(const float x, const float y, const float z);
 
+        void AppendRotations(const float x, const float y, const float z);
+        void PrependRotations(const float x, const float y, const float z);
+
     private:
         // Create a uninitialized matrix. Only internal use.
         Matrix() = default;

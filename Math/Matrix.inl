@@ -477,6 +477,16 @@ namespace Math
         m[3][2] *= z;
     }
 
+    inline void Matrix::AppendRotations(const float x, const float y, const float z)
+    {
+        *this = Matrix::Rotation(x, y, z) * (*this);
+    }
+
+    inline void Matrix::PrependRotations(const float x, const float y, const float z)
+    {
+        *this = (*this) * Matrix::Rotation(x, y, z);
+    }
+
     inline Matrix Matrix::RotationX(const float rad)
     {
         const float sin = std::sinf(rad);
