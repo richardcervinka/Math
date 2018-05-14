@@ -65,10 +65,6 @@ namespace Math
         bool operator==(const Matrix&) const;
         bool operator!=(const Matrix&) const;
 
-        // Add.
-        Matrix operator+(const Matrix&) const;
-        Matrix& operator+=(const Matrix&);
-
         // Multiply.
         Matrix operator*(const Matrix&) const;
 
@@ -101,13 +97,8 @@ namespace Math
         Matrix() = default;
 
         // Implementation.
-        static float Determinant(const Matrix&);
         static void Transpose(const Matrix& m, Matrix* const o);
         static bool Invert(const Matrix& m, Matrix& o);
-        static Matrix Multiply(const Matrix& l, const Matrix& r);
-        static Vector Multiply(const Matrix& l, const Vector& r);
-        static Vector Multiply(const Vector& l, const Matrix& r);
-        static void Add(const Matrix& l, const Matrix& r, Matrix& result);
 
         // Friends that needs access to the Multiply function.
         friend Vector operator*(const Matrix&, const Vector&);

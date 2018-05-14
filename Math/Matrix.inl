@@ -37,50 +37,6 @@ inline Math::Vector CreateVector(const DirectX::XMVECTOR& v)
 
 namespace Math
 {
-
-    inline float Matrix::Determinant(const Matrix& m)
-    {
-        #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
-
-        const DirectX::XMMATRIX xm = LoadXmMatrix(m);
-        const DirectX::XMVECTOR xv = DirectX::XMMatrixDeterminant(xm);
-        return DirectX::XMVectorGetX(xv);
-
-        #else
-
-        const float t0 = m.m[2][2] * m.m[3][3] - m.m[2][3] * m.m[3][2];
-        const float t1 = m.m[2][3] * m.m[3][1] - m.m[2][1] * m.m[3][3];
-        const float t2 = m.m[2][1] * m.m[3][2] - m.m[2][2] * m.m[3][1];
-
-        float det00 = {
-            m.m[1][1] * t0 +
-            m.m[1][2] * t1 +
-            m.m[1][3] * t2
-        };
-
-        float det10 = {
-            m.m[0][1] * t0 +
-            m.m[0][2] * t1 +
-            m.m[0][3] * t2
-        };
-
-        float det20 = {
-            m.m[0][1] * (m.m[1][2] * m.m[3][3] - m.m[1][3] * m.m[3][2]) +
-            m.m[0][2] * (m.m[1][3] * m.m[3][1] - m.m[1][1] * m.m[3][3]) +
-            m.m[0][3] * (m.m[1][1] * m.m[3][2] - m.m[1][2] * m.m[3][1])
-        };
-
-        float det30 = {
-            m.m[0][1] * (m.m[1][2] * m.m[2][3] - m.m[1][3] * m.m[2][2]) +
-            m.m[0][2] * (m.m[1][3] * m.m[2][1] - m.m[1][1] * m.m[2][3]) +
-            m.m[0][3] * (m.m[1][1] * m.m[2][2] - m.m[1][2] * m.m[2][1])
-        };
-
-        return m.m[0][0] * det00 - m.m[1][0] * det10 + m.m[2][0] * det20 - m.m[3][0] * det30;
-
-        #endif
-    }
-
     inline void Matrix::Transpose(const Matrix& m, Matrix* const o)
     {
         #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
@@ -182,36 +138,8 @@ namespace Math
         #endif
     }
 
-    inline Matrix Matrix::Multiply(const Matrix& l, const Matrix& r)
-    {
-        #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
-
-        const DirectX::XMMATRIX xm = DirectX::XMMatrixMultiply(LoadXmMatrix(l), LoadXmMatrix(r));
-        Matrix m;
-        StoreXmMatrix(xm, &m);
-        return m;
-
-        #else
-
-        Matrix result = Matrix::Zero();
-
-        for (int row = 0; row < 4; ++row)
-        {
-            for (int col = 0; col < 4; ++col)
-            {
-                for (int i = 0; i < 4; ++i)
-                {
-                    result.m[row][col] += l.m[row][i] * r.m[i][col];
-                }
-            }
-        }
-
-        return result;
-
-        #endif
-    }
-
-    inline Vector Matrix::Multiply(const Matrix& l, const Vector& r)
+    // Matrix * column-major vector (vector transformation).
+    inline Vector operator*(const Matrix& l, const Vector& r)
     {
         #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
 
@@ -233,7 +161,8 @@ namespace Math
         #endif
     }
 
-    inline Vector Matrix::Multiply(const Vector& l, const Matrix& r)
+    // Row-major vector * matrix (vector transformation).
+    inline Vector operator*(const Vector& l, const Matrix& r)
     {
         #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
 
@@ -252,29 +181,6 @@ namespace Math
         );
 
         #endif
-    }
-
-    inline void Matrix::Add(const Matrix& l, const Matrix& r, Matrix& result)
-    {
-        for (int row = 0; row < 4; ++row)
-        {
-            for (int col = 0; col < 4; ++col)
-            {
-                result.m[row][col] = l.m[row][col] + r.m[row][col];
-            }
-        }
-    }
-
-    // Matrix * column-major vector (vector transformation).
-    inline Vector operator*(const Matrix& m, const Vector& v)
-    {
-        return Matrix::Multiply(m, v);
-    }
-
-    // Row-major vector * matrix (vector transformation).
-    inline Vector operator*(const Vector& v, const Matrix& m)
-    {
-        return Matrix::Multiply(v, m);
     }
 
     inline Matrix Matrix::Identity()
@@ -356,20 +262,31 @@ namespace Math
 
     inline Matrix Matrix::operator*(const Matrix& r) const
     {
-        return Multiply(*this, r);
-    }
+        #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
 
-    inline Matrix Matrix::operator+(const Matrix& r) const
-    {
-        Matrix result;
-        Add(*this, r, result);
+        const DirectX::XMMATRIX xm = DirectX::XMMatrixMultiply(LoadXmMatrix(*this), LoadXmMatrix(r));
+        Matrix m;
+        StoreXmMatrix(xm, &m);
+        return m;
+
+        #else
+
+        Matrix result = Matrix::Zero();
+
+        for (int row = 0; row < 4; ++row)
+        {
+            for (int col = 0; col < 4; ++col)
+            {
+                for (int i = 0; i < 4; ++i)
+                {
+                    result.m[row][col] += m[row][i] * r.m[i][col];
+                }
+            }
+        }
+
         return result;
-    }
 
-    inline Matrix& Matrix::operator+=(const Matrix& r)
-    {
-        Add(*this, r, *this);
-        return *this;
+        #endif
     }
 
     inline void Matrix::SwapRows(const int r1, const int r2)
@@ -403,7 +320,45 @@ namespace Math
 
     inline float Matrix::Determinant() const
     {
-        return Determinant(*this);
+        #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
+
+        const DirectX::XMMATRIX xm = LoadXmMatrix(*this);
+        const DirectX::XMVECTOR xv = DirectX::XMMatrixDeterminant(xm);
+        return DirectX::XMVectorGetX(xv);
+
+        #else
+
+        const float t0 = m[2][2] * m[3][3] - m[2][3] * m[3][2];
+        const float t1 = m[2][3] * m[3][1] - m[2][1] * m[3][3];
+        const float t2 = m[2][1] * m[3][2] - m[2][2] * m[3][1];
+
+        float det00 = {
+            m[1][1] * t0 +
+            m[1][2] * t1 +
+            m[1][3] * t2
+        };
+
+        float det10 = {
+            m[0][1] * t0 +
+            m[0][2] * t1 +
+            m[0][3] * t2
+        };
+
+        float det20 = {
+            m[0][1] * (m[1][2] * m[3][3] - m[1][3] * m[3][2]) +
+            m[0][2] * (m[1][3] * m[3][1] - m[1][1] * m[3][3]) +
+            m[0][3] * (m[1][1] * m[3][2] - m[1][2] * m[3][1])
+        };
+
+        float det30 = {
+            m[0][1] * (m[1][2] * m[2][3] - m[1][3] * m[2][2]) +
+            m[0][2] * (m[1][3] * m[2][1] - m[1][1] * m[2][3]) +
+            m[0][3] * (m[1][1] * m[2][2] - m[1][2] * m[2][1])
+        };
+
+        return m[0][0] * det00 - m[1][0] * det10 + m[2][0] * det20 - m[3][0] * det30;
+
+        #endif
     }
 
     inline Vector Matrix::Transform(const Vector& v) const
@@ -413,12 +368,12 @@ namespace Math
 
     inline void Matrix::AppendTransformations(const Matrix& t)
     {
-        *this = Multiply(t, *this);
+        *this = t * (*this);
     }
 
     inline void Matrix::PrependTransformations(const Matrix& t)
     {
-        *this = Multiply(*this, t);
+        *this = (*this) * t;
     }
 
     inline void Matrix::AppendTranslation(const float x, const float y, const float z)
