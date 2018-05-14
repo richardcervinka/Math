@@ -99,7 +99,6 @@ namespace Math
 
         // Implementation.
         static float Determinant(const Matrix&);
-        static void MatrixTranspose(Matrix&);
         static void Transpose(const Matrix& m, Matrix* const o);
         static bool Invert(const Matrix& m, Matrix& o);
         static Matrix Multiply(const Matrix& l, const Matrix& r);

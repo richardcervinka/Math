@@ -4,7 +4,7 @@
 #include <cmath>
 
 // Implementation switch.
-#define COMPILE_MATH_MATRIX_DIRECTX_MATH
+//#define COMPILE_MATH_MATRIX_DIRECTX_MATH
 
 // DirectX Math implementation helpers.
 #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
@@ -77,26 +77,6 @@ namespace Math
         };
 
         return m.m[0][0] * det00 - m.m[1][0] * det10 + m.m[2][0] * det20 - m.m[3][0] * det30;
-
-        #endif
-    }
-
-    inline void Matrix::MatrixTranspose(Matrix& m)
-    {
-        #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
-
-        DirectX::XMMATRIX xm = LoadXmMatrix(m);
-        xm = DirectX::XMMatrixTranspose(xm);
-        StoreXmMatrix(xm, &m);
-
-        #else
-
-        std::swap(m.m[1][0], m.m[0][1]);
-        std::swap(m.m[2][0], m.m[0][2]);
-        std::swap(m.m[3][0], m.m[0][3]);
-        std::swap(m.m[2][1], m.m[1][2]);
-        std::swap(m.m[3][1], m.m[1][3]);
-        std::swap(m.m[3][2], m.m[2][3]);
 
         #endif
     }
@@ -346,7 +326,22 @@ namespace Math
 
     inline void Matrix::Transpose()
     {
-        MatrixTranspose(*this);
+        #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
+
+        DirectX::XMMATRIX xm = LoadXmMatrix(*this);
+        xm = DirectX::XMMatrixTranspose(xm);
+        StoreXmMatrix(xm, this);
+
+        #else
+
+        std::swap(m[1][0], m[0][1]);
+        std::swap(m[2][0], m[0][2]);
+        std::swap(m[3][0], m[0][3]);
+        std::swap(m[2][1], m[1][2]);
+        std::swap(m[3][1], m[1][3]);
+        std::swap(m[3][2], m[2][3]);
+
+        #endif
     }
 
     inline bool Matrix::operator==(const Matrix& r) const
