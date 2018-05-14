@@ -42,7 +42,7 @@ namespace Math
         static Matrix Rotation(const Vector&);
 
         // Create a rotation matrix around the axis defined as an unit vector.
-        //static Matrix RotationAxes(const Vector& v);
+        static Matrix RotationAxis(const Vector& v, const float rad);
 
         // Create a scale matrix.
         static Matrix Scale(const float x, const float y, const float z);

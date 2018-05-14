@@ -4,7 +4,7 @@
 #include <cmath>
 
 // Implementation switch.
-//#define COMPILE_MATH_MATRIX_DIRECTX_MATH
+#define COMPILE_MATH_MATRIX_DIRECTX_MATH
 
 // DirectX Math implementation helpers.
 #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
@@ -552,6 +552,44 @@ namespace Math
         return Rotation(v.x, v.y, v.z);
     }
 
+    inline Matrix Matrix::RotationAxis(const Vector& v, const float rad)
+    {
+        #ifdef COMPILE_MATH_MATRIX_DIRECTX_MATH
+
+        DirectX::XMVECTOR xv = LoadXmVector(v);
+        DirectX::XMMATRIX xm = DirectX::XMMatrixRotationNormal(xv, -rad);
+        Matrix m;
+        StoreXmMatrix(xm, &m);
+        return m;
+
+        #else
+
+        const float sin = std::sinf(rad);
+        const float cos = std::cosf(rad);
+        const float ncos = 1.0f - cos;
+
+        Matrix m;
+        m.m[0][0] = cos + (v.x * v.x) * ncos;
+        m.m[0][1] = v.x * v.y * ncos - v.z * sin;
+        m.m[0][2] = v.x * v.z * ncos + v.y * sin;
+        m.m[0][3] = 0.0f;
+        m.m[1][0] = v.y * v.x * ncos + v.z * sin;
+        m.m[1][1] = cos + (v.y * v.y) * ncos;
+        m.m[1][2] = v.y * v.z * ncos - v.x * sin;
+        m.m[1][3] = 0.0f;
+        m.m[2][0] = v.z * v.x * ncos - v.y * sin;
+        m.m[2][1] = v.z * v.y * ncos + v.x * sin;
+        m.m[2][2] = cos + (v.z * v.z) * ncos;
+        m.m[2][3] = 0.0f;
+        m.m[3][0] = 0.0f;
+        m.m[3][1] = 0.0f;
+        m.m[3][2] = 0.0f;
+        m.m[3][3] = 1.0f;
+        return m;
+
+        #endif
+    }
+    
     inline Matrix Matrix::Scale(const float x, const float y, const float z)
     {
         Matrix m;
